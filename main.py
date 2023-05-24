@@ -1,9 +1,20 @@
 import os
 import csv
 from tkinter import *
+import sys
 
-database = "SimpleView.tsv"
-directory = 'Decks'
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS2
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 uniqueCardList = []
 cardList = []
 freqDict = {}
@@ -11,8 +22,8 @@ sortedFreqDict = {}
 
 
 def decks_to_list(listname):
-    for filename in os.listdir(directory):
-        f = os.path.join(directory, filename)
+    for filename in os.listdir(resource_path('Decks')):
+        f = os.path.join(resource_path('Decks'), filename)
 
         if os.path.isfile(f):
             with open(f) as Deck:
@@ -26,7 +37,7 @@ def decks_to_list(listname):
 
 def IDs_to_names():
     for rawID in cardList:
-        with open(database) as data:
+        with open(resource_path("SimpleView.tsv")) as data:
             tsv_file = csv.DictReader(data, delimiter="\t")
             for row in tsv_file:
                 if rawID == row['id']:
@@ -66,7 +77,7 @@ def run():
             create_uniques_list(cardList, uniqueCardList)
             create_freq_dict(cardList, uniqueCardList, freqDict)
             sort_freq_dict(freqDict)
-            with open("Export/"+fileNameEntry.get(), 'x') as export:
+            with open(resource_path("Export/"+fileNameEntry.get()), 'x') as export:
                 export.write("These decks had a combined "+str(len(cardList))+" cards, and "+str(len(uniqueCardList)) +
                              " unique cards. \n")
                 for key, value in sortedFreqDict.items():
@@ -90,8 +101,6 @@ def run():
 window = Tk()
 window.geometry("1200x400")
 window.title("Card Frequency Parser")
-icon = PhotoImage(file="../../OneDrive/Desktop/ydks Freq Parser Application/icon.png")
-window.iconphoto(True, icon)
 instructions = Label(window,
                      text="Find the Decks folder in this application, then add the .ydk files you wish to add.\n "
                           "To get your exported data, name your export file using the entry box, then press the button below.",
